@@ -1,34 +1,40 @@
-## Tipos en es6
+## Patrones de Programación Asíncrona
 
-Objetivo:
+###### Eugenio Pérez Martínez
 
-* Entender los nuevos tipos de ES6
-* Hacer ejercicios prácticos para descubrir como facilitan algunas tareas
-* Entender como el uso correcto de los tipos mejora el rendimiento.
+--
+## Temario
+
+* Introducción
+* Event Loop
+* Callbacks
+* Promesas
+* Async / Await
+
 
 --
 
 Preparar entorno:
 
 ```bash
-npm i -g madoos-es6-types
+npm i -g course-asynchrony
 ```
 
 Crear un directorio de trabajo:
 
 ```bash
-mkdir es6-types
-cd es6-types
+mkdir course-asynchrony
+cd course-asynchrony
 ```
 
 Obtener retos:
 
 ```bash
-madoos-es6-types
+course-asynchrony
 ```
 
 Verificar resultados:
 
 ```bash
-madoos-es6-types verify <FILE>
+course-asynchrony verify <FILE>
 ```

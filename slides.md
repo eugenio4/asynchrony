@@ -1,318 +1,445 @@
-## Tipos en es6
+## Patrones de Programación Asíncrona
 
-Objetivo:
+###### Eugenio Pérez Martínez
 
-* Entender los nuevos tipos de ES6
-* Hacer ejercicios prácticos para descubrir como facilitan algunas tareas
-* Entender como el uso correcto de los tipos mejora el rendimiento.
+--
+## Temario
+
+* Introducción
+* Event Loop
+* Callbacks
+* Promesas
+* Async / Await
+
 
 --
 
 Preparar entorno:
 
 ```bash
-npm i -g madoos-es6-types
+npm i -g course-asynchrony
 ```
 
 Crear un directorio de trabajo:
 
 ```bash
-mkdir es6-types
-cd es6-types
+mkdir course-asynchrony
+cd course-asynchrony
 ```
 
 Obtener retos:
 
 ```bash
-madoos-es6-types
+course-asynchrony
 ```
 
 Verificar resultados:
 
 ```bash
-madoos-es6-types verify <FILE>
+course-asynchrony verify <FILE>
 ```
 
 ---
-## Tipos de Datos
+## Introducción
 
 --
 
-* Fundamentos
-* Objetos: descriptors, Getters, setters, Prototipos
-* Array
-* Map
-* WeakMap
-* Set
-* WeakSet
-* Symbol
-* Proxy
-
---
-## Tipos
+* Razón de ser
+* Concurrencia Vs Paralelismo
+* Asíncrono
+* El problema fundamental: Condiciones de carrera
 
 --
 
-¿Que es un tipo?
+## Razón de ser
 
-Un tipo es un conjunto de carascteristicas que identifican el comportamiento de un valor en particular.
+--
+* Single-threading
+
+* Tipos de eventos asíncronos:
+  * Entrada del usuario.
+  * Llamada a un servicio.
+  * Leer una base de datos.
+  * Leer un sistema de archivos.
+  * ...
+
+--
+## Concurrencia Vs Paralelismo
+Ambos permiten realizar varios procesos "Al mismo tiempo".
+--
+### Concurrencia
+Dos procesos pueden progresar y avanzar independientemente del otro. Si hay dos hilos, ambos progresan de forma independiente.
+
+Se puede conseguir con un solo proceso o hilo turnando la ejecución de las tareas.
+
+¿Se puede conseguir concurrencia en Javacsript?
+
+--
+Event loop
+--
+### Paralelismo
+Dos procesos se están ejecutando simultáneamente. Se puede decir que si el cálculo es paralelo, también es concurrente.
+
+¿Se puede conseguir paralelismo en Javacsript?
+--
+* Browser
+  * Web workers
+* NodeJs
+  * Procesos Hijos (Máquinas multicore)
+--
+
+## Asíncrono
+Algo que sucederá en el futuro.
+--
+
+Obtener datos a través de una llamada a un servicio.
+
+```javascript
+var data = get( "http://some.url.1" );
+
+console.log( data );
+// Oops! `data` generally won't have the Ajax results
+
+```
+
+--
+Obtener datos a través de una llamada a un servicio.
+
+```javascript
+get( "http://some.url.1",  function (data) {
+  console.log( data );
+});
+
+```
+
+--
+Nunca realizar solicitudes Ajax síncronas.
+![Scared](/img/scared.png)
+
+* Bloquea la IU del navegador y evita cualquier interacción del usuario.
+* Bloquea el resto de peticiones y procesos del navegador.
 
 --
 
-## Division de los tipos
-
---
-**Primitivos:**
-
-* String
-* Number
-* Boolean
-* Symbol
-* null
-* undefined
-
---
-**Objetos (Por referencia)**
-
-* Function
-* Array
-* Object
-* Maps
-* Set
-* Weakset
-* WeakMap
-* Date
-* RegExp
-* Error
-
----
-## Objectos
-
---
-Los objetos son una colección de propiedades en donde los valores de las propiedades pueden ser de cualquier tipo y las propiedades solo pueden ser strings o símbolos
---
-
-## Atributos de las propiedades
-
-* value
-* configurable
-* enumerable
-* writable
-
---
-
-## Tipos de propiedads
-
-* Data properties
-* Accessor properties
-* Internal properties
-
---
-## Descriptores de propiedad
+## El problema fundamental: Condición de carrera
 
 --
 
 ```javascript
-const user = {
-  name: "Sara"
-}
 
-const descriptor = Object.getOwnPropertyDescriptors(user)
-/*
-{
-    name: {
-        value: "Sara",
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        __proto__: Object
-    }
+var a = 1;var b = 2;
+function foo(){
+  a++;
+  b = b * a;
+  a = b + 3;
 }
-*/
+function bar(){
+  b = b-1;
+  a = 8 + b;
+  b = a * 2;
+}
+// ajax(..) is some arbitrary Ajax function given by a library
+ajax( "http://some.url.1", foo );
+ajax( "http://some.url.2", bar );
+
 ```
+Este programa tiene dos posibles resultados dependiendo de cuál comienza a ejecutarse primero.
+---
+## Event Loop
 
 --
 
-## Definiendo propiedades
+![EventLoop](/img/eventloop.png)
 
 --
+* Heap: Asigna una región de memoria.
+* Stack: Las llamadas a función forman una pila de frames. Un frame encapsula información como el contexto y las variables locales de una función.
+* Browser or Web APIs
+--
+### Principales características
+* Ejecutar hasta completar.
+* Añadiendo mensajes. (setTimeout, eventos, peticiones, ...)
+* Cero retraso -> setTimeout 0
+* Nunca se interrumpe
+--
+```javascript
+
+function main(){
+  console.log('A');
+  setTimeout(
+    function display(){ console.log('B'); }
+  ,0);
+	console.log('C');
+}
+main();
+```
+--
+![EventLoop](/img/eventloop3.png)
+--
+```javascript
+  $.on('button', 'click', init);
+
+  function init() {
+      setTimeout(function timer() {
+          c();
+      }, 3000);
+  }
+
+  function a (){
+      console.log("A ha terminado");
+  }
+
+  function b (){
+      a();
+      console.log("B ha terminado");
+  }
+
+  function c (){
+      b();
+      console.log("C ha terminado");
+  }
+```
+--
+[Demo Event Loop](http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D)
+
+---
+## Callbacks
+--
+La devolución de llamada es la forma más común de asíncronía. Hasta que llegaron las promesas...
 
 ```javascript
-const user = {}
+// Ejemplo 1
+// Inicio del código
+request(optionsRequest, function(..){
+	// Ejecución cuando la llamada ajax termina.
+} );
+// Fin del código secuencial
 
-Object.defineProperty(user, "name", {
-  enumerable: false,
-  configurable: true,
-  writable: true,
-  value: "Sara"
+
+// Ejemplo 2
+setTimeout( function(){
+	// Ejecución del código asíncrono.
+}, 1000 );
+
+```
+--
+## Callback hell or pyramid of doom
+
+--
+Encadenamiento de callbacks
+
+```javascript
+myButton.addEventListener('click', function(){
+  setTimeout( function request(){
+    request('http://some.url.1', function response(url){
+      request(url, function response(text){
+			
+		  });
+		});
+	}, 500) ; 
+});	
+} );
+
+```
+--
+```javascript
+fs.readdir(source, function (err, files) {
+  if (err) {
+    console.log('Error finding files: ' + err)
+  } else {
+    files.forEach(function (filename, fileIndex) {
+      console.log(filename)
+      gm(source + filename).size(function (err, values) {
+        if (err) {
+          console.log('Error identifying file size: ' + err)
+        } else {
+          widths.forEach(function (width, widthIndex) {            
+            this.resize(width, widthIndex).write(dest + 'w' + width + '_' + filename, function(err) {
+              if (err) console.log('Error writing file: ' + err)
+            })
+          }.bind(this))
+        }
+      })
+    })
+  }
 })
+
 ```
 
 --
 
-## Getters y setters
-
---
-
-En ocasiones queremos valores basados en otros valores, para esto los data accessors son bastante útiles.
-
---
+## Buenas prácticas
 
 ```javascript
-const user = {
-  get name() {
-    return this.name
-  },
-  set name(value) {
-    this.name = value.toUpperCase()
-  }
-}
-
-user.name = "Sara"
-// SARA
-```
-
---
-
-## Prototype
-
---
-Los prototipos son un conjunto de normas para integrar Programación Orientada a Objetos en JavaScript. Entonces, siguiendo estas reglas nosotros debemos ser capaces de crear las distintas metodologías de la Orientación a Objetos:
-
-* Herencia
-* Encapsulamiento
-* Abstracción
-* Polimorfismo
-
---
-
-## Comparación POO y POP
-
---
-Objetos de clases:
-
-* Una clase definida por su código fuente es estática.
-* Representa una definición abstracta del objeto.
-* Cada objeto es una instancia de una clase.
-* El legado se encuentra en las clases.
-
---
-Objetos prototipos:
-
-* Un prototipo definido en su código fuente es mutable.
-* Es en sí mismo un objeto, así como otros.
-* Tiene una existencia física en la memoria.
-* Puede ser modificado y llamado.
-* Debe ser nombrado.
-* Un prototipo puede ser visto como un modelo ejemplar de una familia objeto.
-* Un objeto hereda propiedades (valores y métodos) de su prototipo.
-
---
-
-## Enlazando prototipos
-
---
-
-```javascript
-function userFactory(name) {
-  const proto = {
-    nameToUpper() {
-      return this.name.toUpperCase()
-    }
-  }
-
-  return Object.create(proto, {
-    name: { writable: true, configurable: true, value: name }
+var form = document.querySelector('form')
+form.onsubmit = function (submitEvent) {
+  var name = document.querySelector('input').value
+  request({
+    uri: "http://example.com/upload",
+    body: name,
+    method: "POST"
+  }, function (err, response, body) {
+    var statusMessage = document.querySelector('.status')
+    if (err) return statusMessage.value = err
+    statusMessage.value = body
   })
 }
-
-const mohamed = userFactory("Mohamed")
-mohamed.nameToUpper() // => "MOHAMED"
 ```
+--
+### 1. Da un nombre a las funciones anónimas y ponlas en primer lugar del código
+
+* Más legible gracias a los nombres de las funciones.
+* Cuando ocurran excepciones, en el stacktraces tendrás la referencia de la función en lugar de "anonymous".
+* Permite mover las funciones y hacer referencia a ellas por sus nombres.
 
 --
-
-```javascript
-function userFactory(name) {
-  const proto = {
-    nameToUpper() {
-      return this.name.toUpperCase()
-    }
-  }
-  const user = {
-    name,
-    __proto__: proto
-  }
-  return user
+````javascript
+function formSubmit (submitEvent) {
+  var name = document.querySelector('input').value
+  request({
+    uri: "http://example.com/upload",
+    body: name,
+    method: "POST"
+  }, postResponse)
 }
 
-const paco = userFactory("Paco")
-paco.nameToUpper() // => "PACO"
-```
+function postResponse (err, response, body) {
+  var statusMessage = document.querySelector('.status')
+  if (err) return statusMessage.value = err
+  statusMessage.value = body
+}
+````
+--
+### 2. Modulariza las funciones.
+
+Intenta escribir funciones que hagan una única cosa y crea módulos js o librerías.
 
 --
-![picture](https://uploads.toptal.io/blog/image/392/toptal-blog-image-1399822383211.png)
+
+### 3. Maneja los errores
+
+* Errores de sintáxis.
+* Errores en tiempo de ejecución.
+* Errores de plataforma (permios, sin conexión, etc).
+
 --
+Una simple convención es poner el error siempre en el primer argumento, para que no se olvide controlar el error.
 
-## Extendiendo prototipos nativos
+````javascript
 
---
+var fs = require('fs')
 
-```javascript
-Object.prototype.toUpperAll = function() {
-  for (const key of Object.keys(this)) {
-    let value = this[key]
-    if (typeof value === "string") {
-      this[key] = value.toUpperCase()
-    }
-  }
-  return this
+ fs.readFile('/Does/not/exist', handleFile)
+
+ function handleFile (error, file) {
+   if (error) return console.error('Uhoh, there was an error', error)
+   // otherwise, continue on and use `file` in your code
+ }
+````
+-- 
+Otra opción es poner una callback para el caso de éxito y otra para el caso de error.
+
+````javascript
+function success(data) {
+	console.log( data );
 }
 
-const test = { test: "test" }
-test.toUpperAll() // => {test: "TEST"}
-```
-
---
-## Challenge
-
-merge objects
-
-```bash
-# Ejecutar en el terminal: madoos-es6-types
-# Seleccionar: OBJECTS
-# Seguir instrucciones
-```
-
---
-Implementa el método merge para todas las instancias de un objeto:
-
-```javascript
-const a = { a: "a" }
-const b = { b: "b" }
-const c = { c: "c" }
-
-a.merge(b).merge(c) // => { a: 'a', b: 'b', c: 'c'}
-```
-
---
-
-Solución:
-
-```javascript
-Object.prototype.merge = function(src) {
-  for (const key of Object.keys(src)) {
-    this[key] = src[key]
-  }
-  return this
+function failure(err) {
+	console.error( err );
 }
 
-const a = { a: "a" }
-const b = { b: "b" }
-const c = { c: "c" }
+ajax( "http://some.url.1", success, failure );
 
-a.merge(b).merge(c) // => { a: 'a', b: 'b', c: 'c'}
-```
+````
+
+--
+## Sincronización de callbacks
+
+Situación: "Para cargar nuestra página de inicio tenemos que llamar a 3 servicios,
+pero no queremos pintar la página hasta tener la respuesta de los tres servicios"
+
+--
+Condiciones de carrera
+````javascript
+function getData1 () { request("http://api.com/data1") }
+
+function getData2 () { request("http://api.com/data2") }
+
+function getData3 () { request("http://api.com/data2") }
+
+function pintar(){
+  //pintamos nuestra página
+}
+
+getData1();
+getData2();
+getData3();
+pintar();
+````
+--
+Problema de rendimiento
+
+````javascript
+function getData1 () { request("http://api.com/data1", getData2) }
+function getData2 () { request("http://api.com/data2", getData3) }
+function getData3 () { request("http://api.com/data2", pintar) }
+function pintar() {
+//pintamos nuestra página
+}
+getData1();
+````
+
+--
+
+Una solución
+
+````javascript
+let datos1 = false;
+let datos2 = false;
+let datos3 = false;
+funcion succes1 => {datos1 = true; pintar();}
+funcion succes2 => {datos2 = true; pintar();}
+funcion succes3 => {datos3 = true; pintar();}
+function getData1 () { request("http://example.com/data1", getData2) }
+
+function getData2 () { request("http://example.com/data2", getData3) }
+
+function getData3 () { request("http://example.com/data2", pintar) }
+
+function pintar(){
+  if (datos1 && datos2 && datos3) {
+    //pintamos nuestra página
+  }
+}
+function init(){
+  getData1();
+  getData2();
+  getData3();
+}
+
+init();
+````
+
+--
+* ¿Qué pasa si falla alguna de las llamadas?
+* ¿Si se lanza alguna excepción en otra parte del código asíncrono?
+* Sí alguna llamada asíncrona nunca termina.
+
+![Scared](/img/scared.png)
+
+--
+
+Hay que aumentar la lógica del código, todo ese control de llamadas asíncronas es lo que se llama "Callback hell".
+--
+## Ejercicio
+  * Leer el contenido de un directorio.
+    * Usa la función fs.readdir del módulo fs.
+  * Leer el fichero.
+    * Usa la función fs.readFile del módulo fs.
+  * Generar imagen en miniatura.
+    * Usa la función resize de la libería jimp.
+  * Escribir a disco.
+    * Usa la libería jimp o el módulo fs.
 
 ---
 ## Challenge
@@ -363,85 +490,6 @@ showName(users[0])
 showName(users[0])
 showName(users[1])
 const calledWithAna = reporter.get(users[0]) // => 2
-```
-
---
-## Maps
-
---
-
-El objeto Map almacena pares clave/valor.
-Cualquier valor pueden ser usados como clave o valor.
-
-```javascript
-const store = new Map([[{ key: "key" }, "value"]])
-```
-
---
-
-## Métodos y propiedades
-
-```javascript
-Map.prototype.constructor
-Map.prototype.size
-
-Map.prototype.clear()
-Map.prototype.entries()
-Map.prototype.forEach(callbackFn[, thisArg])
-Map.prototype.get(key)
-Map.prototype.has(key)
-Map.prototype.values()
-Map.prototype[@@iterator]()
-```
-
---
-Objectos
-
-* Las claves de son Strings y Symbols
-* El tamaño se determina manualmente
-* Para iterar es necesario primiero obtener sus claves
-* No itera en orden
-
-Mapas
-
-* Las claves son de cualquier tipo
-* Tamaño usando la propiedad size
-* Es iterable
-* Itera en orden de inserción
-
---
-
-## Cuándo usar Map?
-
---
-
-* Cuando solo se tiene que acceder a las propiedades, Map es puramente hash
-* En los escenarios que requieren mucha adición y eliminación, el delete de objects tiene problemas de rendimiento
-* Map conserva el orden de sus claves
-
---
-
-* Map asegurará el rendimiento iteración estable en todos los navegadores
-* Map tiende a tener un mejor rendimiento en el almacenamiento de un gran conjunto de datos, especialmente cuando las claves son desconocidas en tiempo de ejecución, y cuando todas las claves son del mismo tipo y todos los valores son del mismo tipo
-
---
-
-## Cuándo NO usar Map?
-
-* Con estructuras de datos muy simples
-* Escenarios donde existe la necesidad de aplicar una lógica separada a la propiedad
-
---
-
-```javascript
-const user {
-  name: 'Sonia',
-  printName(){
-    console.log(this.name)
-  }  
-}
-
-user.printName() //=> "Sonia"
 ```
 
 ---
