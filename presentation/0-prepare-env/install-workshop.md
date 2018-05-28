@@ -14,27 +14,7 @@
 
 --
 
-Preparar entorno:
+### Preparar entorno
 
-```bash
-npm i -g course-asynchrony
-```
-
-Crear un directorio de trabajo:
-
-```bash
-mkdir course-asynchrony
-cd course-asynchrony
-```
-
-Obtener retos:
-
-```bash
-course-asynchrony
-```
-
-Verificar resultados:
-
-```bash
-course-asynchrony verify <FILE>
-```
+* NodeJs
+* Descargar repositorio https://github.com/eugenio4/course-asynchrony

@@ -82,14 +82,14 @@ function readFile (basePath, fileName, successCallback, errorCallback) {
  * @param {Function} errorCallback 
  */
 function readDir (basePath, successCallback, errorCallback) {
-  const ALLOW_EXT = ['.png', '.jpeg', '.gif'];
+  const ALLOW_EXT = ['.png', '.jpeg', '.jpg', '.gif'];
   fs.readdir(basePath, (err, files) => {
     if (err) {
       return errorCallback(err);
     }
-    files.forEach(fileName => {
-      console.log('File found:' + fileName);
+    files.forEach(fileName => {      
       if (ALLOW_EXT.includes(path.extname(fileName))){
+        console.log('File found:' + fileName);
         readFile(basePath, fileName, successCallback, errorCallback);
       }      
     });
@@ -105,7 +105,7 @@ function processFiles(directory, action) {
 }
 
 function init () {
-  let dir = path.resolve(process.cwd(), __dirname).replace('/solutions/callback', '') + '/img';
+  let dir = path.resolve(process.cwd(), __dirname).replace('/solutions/callback', '') + '/imgExercises';
   processFiles(dir, generateThumbnails);
 }
 

@@ -9,7 +9,7 @@
             "type": "node",
             "request": "launch",
             "name": "Iniciar programa",
-            "program": "${workspaceFolder}/solutions/callback/index.js"
+            "program": "${workspaceFolder}/solutions/generators/index.js"
         }
     ]
 }

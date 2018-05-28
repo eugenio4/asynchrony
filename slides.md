@@ -14,31 +14,10 @@
 
 --
 
-Preparar entorno:
+### Preparar entorno
 
-```bash
-npm i -g course-asynchrony
-```
-
-Crear un directorio de trabajo:
-
-```bash
-mkdir course-asynchrony
-cd course-asynchrony
-```
-
-Obtener retos:
-
-```bash
-course-asynchrony
-```
-
-Verificar resultados:
-
-```bash
-course-asynchrony verify <FILE>
-```
-
+* NodeJs
+* Descargar repositorio https://github.com/eugenio4/course-asynchrony
 ---
 ## Introducción
 
@@ -75,7 +54,7 @@ Se puede conseguir con un solo proceso o hilo turnando la ejecución de las tare
 ¿Se puede conseguir concurrencia en Javacsript?
 
 --
-Event loop
+Sí gracias a como trabajar el motor de JS y sus llamadas asíncronas.
 --
 ### Paralelismo
 Dos procesos se están ejecutando simultáneamente. Se puede decir que si el cálculo es paralelo, también es concurrente.
@@ -431,7 +410,15 @@ init();
 
 Hay que aumentar la lógica del código, todo ese control de llamadas asíncronas es lo que se llama "Callback hell".
 --
-## Ejercicio
+### Ejercicio
+  * Necesitamos un programa que pueda leer todos los ficheros de una carpeta y realice ciertas acciones sobre los ficheros.
+  * En esta ocasión solo necesitaremos implentar un método para reducir el tamaño de las imágenes.
+  * Pero necesitamos que el código este preparado para realizar otras acciones sobre los ficheros. 
+
+  --
+
+### Ayuda
+  * En la carpeta problems/callback tienes un fichero con el esquema básico del ejercicio.
   * Leer el contenido de un directorio.
     * Usa la función fs.readdir del módulo fs.
   * Leer el fichero.
@@ -442,369 +429,719 @@ Hay que aumentar la lógica del código, todo ese control de llamadas asíncrona
     * Usa la libería jimp o el módulo fs.
 
 ---
-## Challenge
+## Promesas
+--
 
-count calls
+### Estructura básica
+````javascript
+new Promise((resolve, reject) => {  
+  // código que se va a ejecutar dentro de la promesa.
+});
+  .then()
+  .catch();
+````
+--
 
-```bash
-# Ejecutar en el terminal: madoos-es6-types
-# Seleccionar COUNT CALLS
-# Seguir instrucciones
-```
+### Soporte
+
+* Soporte nativo desde Node.js 0.12, Chrome 32, Firefox 27, Edge 12, Safari 7.1 y Opera 19. 
+* Existen librerías que ofrecen promesas en entornos donde no están disponibles de forma nativa.
 
 --
-Cuenta veces ha sido llamada una fucinón con el mismo argumento:
+### Estados
 
-```javascript
-const reporter = /* your implementation */
-const users = [{ name: "Ana" }, { name: "Eric" }]
+* Pendiente
+* Cumplida
+* Rechazada
 
-function showName(user){
-    /* your implementation */
-    console.log(user.name)
-    return reporter
+--
+### Que nos aportan
+
+* Facilitan el control de las llamadas asíncronas.
+* Solo pueden resolverse una vez.
+* Facilitan la lectura del código.
+* Evitan la inversión de control.
+
+--
+
+### Inversión del control
+Con los callbacks tenemos inversión del control, la continuación de nuestro programa esta basada en una función de devolución de llamada.
+
+Esta devolución de llamada se la entregamos a una tercera parte que no controlamos. ¿Podemos confiar en ese código?
+--
+#### then(..),  catch(..) and finally(...)
+Cada instancia de Promesa tiene varios métodos que nos permiten comprobar si la promesa se cumple o se rechaza.
+
+Una vez que se haya resuelto la Promesa, se llamará a uno u otro de estos manejadores, pero no a ambos, y siempre se llamará de manera asíncrona.
+
+--
+###### then (..)
+
+* Una promesa es aceptada cuando se ejecuta la función resolve.
+* La resolución de la promesa ejecutará el método then.
+
+--
+###### catch (..)
+* Una promesa es rechaza cuando se ejecuta la función reject o cuando se produce una excepción o error.
+* La resolución de la promesa ejecutará el método catch.
+-- 
+###### finally (...)
+* Finally se ejecutará siempre, tanto si la promesa es aceptada como rechazada.
+* No está disponible en todas las versiones de promesas.
+--
+## Ejemplo promesa
+
+````javascript
+new Promise((resolve, reject) => {  
+    if (obtenerNumberoRandom() % 2 === 0) {
+      resolve('numero par'));
+    } else {
+      reject('numero impar');
+    }    
+});
+  .then(resp => console.log(resp)
+  .catch(err => console.log(err));
+````
+--
+
+### Encadenar promesas
+
+El método then crea una promesa.
+
+````javascript
+var p = new Promise((resolve, reject) => {
+  resolve(obtenerNumberoRandom());
+});
+
+p.then( function(v){
+	console.log( v );	// 21
+	return v * 2;
+})
+  .then( function(v){
+    console.log( v );	// 42
+  } );
+````
+--
+### Encadenar promesas
+````javascript
+function delay(time) {
+	return new Promise( function(resolve,reject){
+		setTimeout( resolve, time );
+	} );
 }
 
-showName(users[0])
-showName(users[0])
-showName(users[1])
-calledWithAna =  /* your implementation */ //
-```
+delay( 100 ) // step 1
+.then( function STEP2(){
+	console.log( "step 2 (after 100ms)" );
+	return delay( 200 );
+} )
+.then( function STEP3(){
+	console.log( "step 3 (after another 200ms)" );
+} )
+.then( function STEP4(){
+	console.log( "step 4 (next Job)" );
+	return delay( 50 );
+} )
+.then( function STEP5(){
+	console.log( "step 5 (after another 50ms)" );
+});
+````
+--
+## Errores en promesas
+Una promesa rechazada o un error de JS ejecutará la primera función catch.
+
+````javascript
+new Promise((resolve, reject) => {
+  reject();
+})
+  .then(()=> { console.log('1') })
+  .catch(()=> { console.log('2') })
+  .then(()=> { console.log('3') })
+  .catch(()=> { console.log('4') })
+````
+Resultado:
+  2
+  3
+--
+Si se lanza un error desde el catch se propagará el error hasta el próximo catch
+
+````javascript
+new Promise((resolve, reject) => {
+  foo(); //undefined
+})
+  .then(()=> {
+    console.log('1')
+  })
+  .catch(()=> {
+    console.log('2')
+    throw 'error';
+  })
+  .then(()=> {
+    console.log('3')
+  })
+  .catch(()=> {
+    console.log('4')
+  })
+````
+Resultado:
+  2
+  3
+--
+### Errores no controlados
+
+El evento unhandledRejection de nodeJS será lanzado con aquellas promesas que no han sido controladas.
+
+````javascript
+  process.on('unhandledRejection', error => {
+  // Mostrará por pantalla "unhandledRejection err is not defined"
+  console.log('unhandledRejection', error.message);
+});
+
+new Promise((_, reject) => reject(new Error('woops'))).
+  catch(() => {
+    // No se ejecutará
+    console.log('caught', err.message); //err no esta declarado
+  });
+
+````
 
 --
-Solución:
-
-```javascript
-const reporter = new Map()
-const users = [{ name: "Ana" }, { name: "Eric" }]
-
-function showName(user) {
-  console.log(user.name)
-  let called = reporter.get(user) || 0
-  called++
-  reporter.set(user, called)
-  return reporter
-}
-
-showName(users[0])
-showName(users[0])
-showName(users[1])
-const calledWithAna = reporter.get(users[0]) // => 2
-```
-
----
-## Challenge
-
-unique numbers
-
-```bash
-# Ejecutar en el terminal: madoos-es6-types
-# Seleccionar UNIQUE NUMBERS
-# Seguir instrucciones
-```
-
+## Promesas ES6
 --
-Implementar una funcion que retorne los elementos únicos
+## new Promise(..) Constructor
+Se usa con la palabra reservada new.
+````javascript
+  var p = new Promise( function(resolve,reject){
+    // `resolve(..)` to resolve/fulfill the promise
+    // `reject(..)` to reject the promise
+  } );
+````
 
-```javascript
-const numbers = [1, 1, 2, 2, 3, 3, 4, 4]
+Then (...) y catch (...) también crean y devuelven una nueva promesa, que puede encadenarse a otras promesas.
 
-function unique(numbers) {
-  /* your implementation */
-}
+Si cualquier devolución de llamada devuelve un valor inmediato, no Promesa, ese valor se establece como el cumplimiento de la promesa devuelta.
+--
+````javascript 
+let p = new Promise((resolve, reject) => {
+  setTimeout(()=> {
+    resolve(1)
+  }, 300);
+})
+  .then((value)=> {
+    console.log('Resultado: ' +value)
+  })
+  .catch((err)=> {
+    console.log(err)
+  });
 
-const uniqueNumbers = unique(numbers)
-// => [1, 2, 3, 4]
-```
+  // Resultado: 1
 
+````
+--
+Si cualquier devolución de llamada devuelve una promesa, ese valor se desenvuelve y se convierte en la resolución de la promesa inicial.
+--
+````javascript 
+let p = new Promise((resolve, reject) => {
+  setTimeout(()=> {
+    resolve(foo())
+  }, 300);
+})
+  .then((value)=> {
+    console.log(value)
+  })
+  .catch((err)=> {
+    console.log(err)
+  });
+
+let foo = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout( () => {
+      resolve(4)
+    }, 300);
+  });
+};
+
+  // Resultado: 4
+
+````
 --
 
-Solución
+## Promise.resolve
+* Asegurar en caso de que se produzca un error.
+* El valor devuelto siempre será una promesa (una función a veces devuele una promesa y otras veces no).
 
-```javascript
-function unique(numbers) {
-  return numbers.filter(function(elem, pos, arr) {
-    return arr.indexOf(elem) == pos
+````javascript
+Promise.resolve( foo( 42 ) )
+  .then( function(v){
+    console.log( v );
+  } );
+
+````
+--
+## Promise.then
+* Devuelve otra promesa
+
+````javascript
+Promise.resolve( foo( 42 ) )
+  .then( function(v){
+    console.log( v );
+  } );
+
+````
+### Promise.all
+
+Permite coordinar varias promesas y esperar a que se cumplan todas ellas. Esto nos permite lanzar llamadas asíncronas en "paralelo".
+
+No importa en qué orden, solo que todas las promesas deben cumplirse.
+
+````javascript
+Promise.all([
+  request('url1'),
+  request('url2')
+  request('url3')
+])
+  .then((result) => { 
+    //result is array with values of each response
+  })
+  .catch(() => {
+    // is execufed if fail at least one request
+  })
+````
+
+### Promise.race
+
+La promesa estará resuelta, en cuanto una de las promesas que se pasan como parámetro se cumpla.
+
+````javascript
+Promise.race([
+  request('url1'),
+  request('url2')
+  request('url3')
+])
+  .then((result) => { 
+    //result have value of first promise resolved
+  })
+  .catch(() => {
+    // is execufed if fail at least one request
+  })
+````
+--
+## Patrones y buenas prácticas
+--
+### Promisifying callbacks
+
+Convierte callbacks a promesas.
+
+````javascript
+
+function readFile(filename, onSuccess, onError) {  
+    fs.readFile(filename, 'utf8', (err, data) => {
+      if (err) onError(err);
+      else onSuccess(data);
+    })
   })
 }
-```
 
-```javascript
-function unique(numbers) {
-  return Array.from(new Set(numbers))
-}
-```
+readFile('index.html', console.log, console.log);
+````
+
 
 --
-## set
+La función debe retornar una promesa. LLamaremos a los métodos resolve (donde antes llamabamos a la función del callback) y reject (cuando queríamos comunicar un error).
 
-El objeto Set te permite almacenar valores únicos de cualquier tipo, incluso valores primitivos u objetos de referencia.
+````javascript
 
-```javascript
-new Set([1, 2, 3])
-new Set([{}, new Map(), []])
-```
-
---
-
-## Métodos y propiedades
-
-```javascript
-Set.prototype.constructor
-Set.prototype.size
-
-Set.prototype.add(value)
-Set.prototype.clear()
-Set.prototype.delete(value)
-Set.prototype.entries()
-Set.prototype.forEach(callbackFn[, thisArg])
-Set.prototype.has(value)
-Set.prototype.keys()
-Set.prototype.values()
-Set.prototype[@@iterator]()
-```
-
---
-## Set vs Array
-
-![picture](https://cdn-images-1.medium.com/max/800/1*ImM6dhwekslUYwg5cX74AQ.png)
-
---
-
-En la mayoría de los idiomas, los Set tienen un claro y claro caso de uso: operaciones rápidas de unión, intersección y diferencia.
-
-En JavaScript estas operaciones no se definen fácilmente
-
---
-
-Sin las operaciones de conjuntos comunes definidas, JavaScript Set () puede verse como un contenedor glorificado que solo almacena elementos únicos. Cuando pones un elemento repetido, en realidad reemplaza al existente.
-
---
-
-Cuando tenemos una gran cantidad de elementos set no empeora al añadir items.
-
---
-
-Presencia
-
-```javascript
-set1.has(5)
-array1.indexOf(5)
-/*
-Set.has() es más rápido que Array.indexOf() incluso para matrices pequeñas.
-La diferencia de ejecución aumenta a medida que aumenta el tamaño de los contenedores.
-
-// size = 1000
-// SET:  21.014999999999418 ARRAY:  54.00500000000102
-// size = 10000
-// SET:  17.44499999999971 ARRAY:  398.505000000001
-// size = 100000
-// SET:  19.770000000004075 ARRAY:  3779.524999999994
-*/
-```
-
---
-
-Velocidad de inserción
-
-```javascript
-set1.add(5)
-array1.push(5)
-/*
-Ah! Las matrices son mucho más rápidas (5x) en inserción que Sets. 
-Tenga en cuenta que la velocidad de inserción crece linealmente en Arrays y de forma no lineal en Sets:
-
-// ammount = 100000;
-// Array.push in 4.054999999993015ms; Set.add in 20.915000000037253ms;
-// ammount = 1000000;
-// Array.push in 17.175000000046566ms; Set.add in 417.03999999992084ms;
-// ^ ~4x more than prev.               ^ ~20x more than prev.
-// ammount = 10000000;
-// Array.push in 349.8299999999581ms; Set.add in 3902.625ms;
-// ^ ~20x more than prev.             ^ ~10x more than prev.
-*/
-```
-
---
-
-Velocidad de iteración
-
-Los valores secuenciales del Array son más rápidos de iterar que los valores de Set (que se repiten en el orden de inserción).
-
-```javascript
-let sum = 0
-
-for (let item of array1) {
-  // <- here
-  sum += item
+function readFilePromise(filename) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filename, 'utf8', (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    })
+  })
 }
 
-for (let item of set1) {
-  // <- here
-  sum += item
-}
+readFilePromise('index.html')
+  .then(data => console.log(data))
+  .catch(e => console.log(e))
 
-// ammount = 100000;
-// Array.for in 4.44999999999709ms; Set.for in 9.239999999997963ms;
-// ammount = 1000000;
-// Array.for in 9.044999999998254ms; Set.for in 55.14499999998952ms;
-// ammount = 10000000;
-// Array.for in 74.47000000000116ms; Set.for in 180.13999999999942ms;
-```
+````
 
 --
+### Promisifying values
 
-Operaciones de conjunto
+Una función que necesite devolver una Promesa, pero maneja ciertos casos de forma sincrona.
 
-Unión
-
-```javascript
-const union = new Set([...set1, ...set2])
-```
-
-Diferencia
-
-```javascript
-const diff = new Set([...set1].filter(x => !set2.has(x)))
-```
-
-Intersección
-
-```javascript
-const intersected = new Set([...set1].filter(x => set2.has(x)))
-```
-
---
-Cuándo usar Set?
-
-```javascript
-const usersCreated = new Set()
-
-class User {
-  constructor() {
-    usersCreated.add(this)
+````javascript
+function readFilePromise(filename) {
+  if (!filename) {
+    return Promise.reject(new Error("Filename not specified"));
   }
-
-  static instancesCreated() {
-    return usersCreated
+  if (filename === 'index.html') {
+    return Promise.resolve('<h1>Hello!</h1>');
   }
+  return new Promise((resolve, reject) => {/*...*/})
 }
 
-const created = User.instancesCreated().size
-```
-
+````
 --
-## Conclusión
+### Código en concurrencia
 
---
+Ejecutar todo el código posible "al mismo tiempo". Para mejorar la performance.
 
-* Set cuando importan valores únicos
-* Set.has es mucho más rápido que Array.indexOf
-* Array.push es mucho más rápido que Set.add
-* Las matrices son más rápidas para iterar secuencialmente
-* Unión, Diferencia, Intersección son fáciles de implementar con Set
+````javascript
+let filenames = ['index.html', 'blog.html', 'terms.html'];
 
----
-## Challenge
-
-memory leak
-
-```bash
-# Ejecutar en el terminal: madoos-es6-types
-# Seleccionar MEMORY LEAK
-# Seguir instrucciones
-```
-
---
-
-En el reto “count calls” hemos encontrado una forma de contar las llamadas únicas.
-
-La solución ha creado un terrible memory leak, tu trabajo es encontrarlo antes que el servidor muera!!
-
---
-
-Solucíon:
-
-```javascript
-const users = new WeakSet()
-let __users__ = []
-
-const addUser = () => {
-  __users__.push({
-    name: Math.random()
-      .toString(36)
-      .substring(7)
+Promise.all(filenames.map(readFilePromise))
+  .then(files => {
+    console.log('index:', files[0]);
+    console.log('blog:', files[1]);
+    console.log('terms:', files[2]);
   })
 
-  users.add(__users__[__users__.length - 1])
-}
+````
+--
+### Controlar errores
 
-const clearUsers = () => {
-  __users__ = []
-}
+Aquí el bloque catch () se desencadena si falla getItem o updateItem.
 
-setInterval(addUser, 250)
-setInterval(clearUsers, 1000)
-setTimeout(() => process.exit(0), 4000)
-console.log(true)
-```
+````javascript
+Promise.resolve()
+  .then(_ => api.getItem(1))
+  .then(item => {
+    item.amount++;
+    return api.updateItem(1, item);
+  })
+  .catch(e => {
+    console.log('failed to get or update item');
+  })
+
+````
+--
+¿Si queremos manejar el error getItem por separado? Basta con insertar otro catch () más arriba.
+
+````javascript
+Promise.resolve()
+  .then(_ => api.getItem(1))
+  .catch(e => api.createItem(1, {amount: 0}))
+  .then(item => {
+    item.amount++;
+    return api.updateItem(1, item);
+  })
+  .catch(e => {
+    console.log('failed to update item');
+  })
+
+
+````
+--
+### Lanzar errores
+
+El código dentro de instrucciones then () se comporta como dentro de un bloque try. Ambos Promise.reject () y throw new Error () harán que se ejecute el siguiente bloque catch ().
 
 --
-## WeakSet
+## Antipatrones y problemas comunes
+
+### Olvidar el return
+
+````javascript
+
+pi.getItem(1)
+  .then(item => {
+    item.amount++;
+    api.updateItem(1, item);
+  })
+  .then(update => {
+    return api.deleteItem(1);
+  })
+  .then(deletion => {
+    console.log('done!');
+  })
+
+````
+La falta de retorno retorno delante de api.updateItem () provoca que ese bloque se resuelva inmediatamente, y api.deleteItem () probablemente se invocará antes de que finalice api.updateItem (). 
+
+El problema es que .then () puede devolver un valor o una nueva promesa, y undefined es un valor válido.
 
 --
 
-Los objetos WeakSet son colecciones de objetos. Un objecto en WeakSet solo puede ser agregado una vez; Esto quiere decir que es unico en la coleccion WeakSet.
+### No controlar los errores
 
+Con Promises, es fácil olvidar que los errores deben manejarse explícitamente. Hay que usar catch siempre. 
+
+Recuerda que los errores se propagan a la promesa superior, no es necesario poner catch a todas las promesas. Basta con ponerla al final.
 --
+### Ejercicio
+  * Convierte los callbacks del ejercicio anterior a promesas.
 
-Las principales diferencias con el objeto Set son:
-
-* A diferencia de Sets, WeakSets son solamente colecciones de objetos y no contienen valores arbitrarios de cualquier otro tipo.
-
-* El WeakSet es débil: Las referencias a objetos en la colección se mantienen débilmente.. Si ya no hay otra referencia a un objeto almacenado en el WeakSet, ellos pueden ser removidos por el recolector de basura. Esto también significa que no hay ninguna lista de objetos almacenados en la colección. Los WeakSets no son enumerables.
-
---
-
-Métodos y propiedades
-
-```javascript
-WeakSet.prototype.constructor
-
-WeakSet.prototype.add(value)
-WeakSet.prototype.delete(value)
-WeakSet.prototype.has(value)
-```
-
---
-## WeakMap
-
---
-
-Las claves de los WeakMaps solamente pueden ser del tipo Object. Los Primitive data types como claves no están permitidos (ej. un Symbol no pueden ser una clave de WeakMap).
-
---
-
-## Métodos y propiedades
-
-```javascript
-WeakMap.prototype.constructor
-
-WeakMap.prototype.delete(key)
-WeakMap.prototype.get(key)
-WeakMap.prototype.has(key)
-WeakMap.prototype.set(key, value)
-```
-
+### Ayuda
+  * En la carpeta problems/promises tienes un fichero con el esquema básico del ejercicio.
 ---
-## Challenge
+## Async / await
+--
+### Principales características.
+* Permite escribir un código basado en promesas como si fuese sincrono, pero sin bloquear el hilo principal.
+* Hacen el código más legible.
 
-time machine
+--
+### Uso
+* Palabra clave *async* antes de la definición de la función.
+* Palabra clave *await* dentro de la función para esperar una promesa.
 
-```bash
-# Ejecutar en el terminal: madoos-es6-types
-# Seleccionar TIME MACHINE
-# Seguir instrucciones
-```
+--
+### ¿Cómno funciona?
+* La función se pausa de una forma que no bloquea el resto del código asíncrono que pueda producirse.
+* Si la promesa se completa.
+  * Recibes de vuelta el valor.
+* Si la promesa rechaza.
+  * Se arroja el valor del error.
 
+--
+### Ejemplo
+*async* convierte a la función en una promesa. Que será aceptada o rechazada si devuelve un valor o una excepción.
+
+````javascript
+  async function myFirstAsyncFunction() {
+    try {
+      const fulfilledValue = await request('url.example');
+      return fulfilledValue;
+    }
+    catch (rejectedValue) {
+      // es necesario usar try/catch para obtner el error que pueda producirse en la promesa.
+    }
+  }
+
+````
+--
+
+### Buenas prácticas
+--
+#### Código sincrono
+
+Es posible realizar código sincrono con async await de la siguiente manera.
+
+````javascript
+async function series() {
+  await wait(500);
+  await wait(500);
+  return "done!";
+}
+````
+
+````javascript
+async function delay() {
+  const wait1 = wait(500);
+  const wait2 = wait(500);
+  await wait1;
+  await wait2;
+  return "done!";
+}
+
+````
+--
+##### Error handling
+
+Usar try catch en las funciones *async* para coger los errores que puedan producirse en las llamadas asíncronas.
+
+````javascript
+async function main () {
+  try {
+    await new Promise((resolve, reject) => {
+      reject(new Error('Error!'))
+    })
+  } catch (err) {
+    // handle error case
+  }
+}
+main()
+  .then(console.log)
+  .catch(console.error)
+
+````
+--
+##### Bucles asíncronos
+
+Este código lanza una excepción porque estamos usando await dentro de una función síncrona.
+````javascript
+async function processArray(array) {
+  array.forEach(item => {
+    await func(item); //este código lanza una excepción
+  });
+}
+````
+
+--
+Podemos definir la función anónima como asíncrona.
+````javascript
+async function processArray(array) {
+  array.forEach(async (item) => {
+    await func(item);
+  });
+}
+````
+
+Pero forEach no esperará hasta que todos las iteraciones estén terminadas. Simplemente ejecutará las tareas.
+
+--
+
+````javascript
+function delay() { return new Promsie( resolve => setTimeout(resolve), 300) };
+
+async function delayedLog(item) {
+  await delay();
+  console.log(item);
+}
+
+async function processArray (array) {
+  array.forEach(async (item) => {
+    await delayedLog(item);
+  });
+  console.log('done');
+}
+processArray([1,2,3]);
+````
+Done!
+1
+2
+3
+
+--
+Para esperar el resultado, deberíamos regresar a la vieja escuela "for loop", o usar la versión moderna con for..of.
+
+````javascript
+
+async function processArray (array) {
+  for (const item of array){
+    await delayedLog(item);
+  });
+  console.log('done');
+}
+processArray([1,2,3]);
+````
+1
+2
+3
+Done!
+
+--
+### Ejercicio
+  * Usa async/ await en el código del ejercicio anterior y comprueba sus diferencias.
+
+### Ayuda
+  * En la carpeta problems/promises tienes un fichero con el esquema básico del ejercicio.
+---
+## Generadores
+--
+* Nos permite expresar el control de flujo asíncrono de forma secuencial y sincróna.
+--
+
+Permiten a las funciones "salir" en un punto en especial, y luego reanudar desde el mismo punto y estado.
+  * El asterisco indica que es un generador. Se puede usar function* o *nombreFunncion
+  * La palabra clave yield es nuestro punto de retorno o reanudación. Podemos usarla de la siguiente manera:
+
+--
+
+### Soporte
+
+* Funcionalidad de ES6 y están disponibles de forma nativa en Node.js 4.x, Chrome 39, Firefox 26.0, Edge 13, Safari 10 y Opera 26. 
+--
+
+### Características
+La llamada a una función generadora no la ejecuta inmediatamente. Se devuelve un objeto iterador en su lugar.
+--
+### Características
+
+Cuando el metodo next() del iterador es llamado, el cuerpo de la función generadora es ejecutado hasta la primera expresión yield, la cual especifica el valor que será retornado por el iterador o con, yield*, delega a otra función generadora.
+
+--
+### Características
+El método next() retorna un objeto con una propiedad *value* que contiene el valor deveulto y una propiedad *done* que indica, con un booleano, si la función generadora ha hecho yield al último valor.
+
+--
+¿Qué hace una función generador?
+
+````javascript
+  function* idMaker(){
+    var index = 0;
+    while(index < 3)
+      yield index++;
+  }
+
+  var gen = idMaker();
+
+  console.log(gen.next().value); // 0
+  console.log(gen.next().value); // 1
+  console.log(gen.next().value); // 2
+  console.log(gen.next().value); // undefined
+````
+--
+Uso de yield*
+
+````javascript
+function* anotherGenerator(i) {
+  yield i + 1;
+  yield i + 2;
+  yield i + 3;
+}
+
+function* generator(i){
+  yield i;
+  yield* anotherGenerator(i);
+  yield i + 10;
+}
+
+var gen = generator(10);
+
+console.log(gen.next().value); // 10
+console.log(gen.next().value); // 11
+console.log(gen.next().value); // 12
+console.log(gen.next().value); // 13
+console.log(gen.next().value);
+
+````
+--
+
+### Entrada y salida
+
+* Una función generador puede recibir parámetros de entrada.
+* Devulve un valor en la propiedad value.
+
+````javascript
+  function *foo(x,y) {
+    return x * y;
+  }
+
+  var it = foo( 6, 7 );
+
+  var res = it.next();
+
+  res.value;	
+````
+--
+### Mensajería de iteración
+Puedes pasar valores a la función generadora con next(value). Y devolver el valor al iterador con yield.
+````javascript
+function *foo(x) {
+	var y = x * (yield);
+	return y;
+}
+var it = foo( 6 );
+it.next();
+var res = it.next( 7 );
+res.value; // 42
+````
+
+### Corrutinas
+
+* Las corrutinas son un concepto de programación que permite a las funciones pausarse y dar control a otra función.
+* Las funciones pasan el control de un lado a otro.
+* Se pueden implementar usando generadores y promesas.
+* Async-Await = Generadores + Promesas
+
+--
+### Ejercicio
+  * Usa generadoes para procesar en paralelo todos los ficheros
+
+### Ayuda
+  * Usa Child Process para crear procesos que puedan correr en paralelo.
+  * Ayudate del código realizado en los anteriores ejercicios.
 ---

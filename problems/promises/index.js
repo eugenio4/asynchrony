@@ -17,7 +17,7 @@ function processFiles(directory, action) {
 }
 
 function init () {
-  let dir = path.resolve(process.cwd(), __dirname).replace('/problems/callback', '') + '/img';
+  let dir = path.resolve(process.cwd(), __dirname).replace('/problems/promises', '') + '/imgExercises';
   processFiles(dir, generateThumbnails);
 }
 

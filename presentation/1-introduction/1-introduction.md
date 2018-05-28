@@ -33,7 +33,7 @@ Se puede conseguir con un solo proceso o hilo turnando la ejecución de las tare
 ¿Se puede conseguir concurrencia en Javacsript?
 
 --
-Event loop
+Sí gracias a como trabajar el motor de JS y sus llamadas asíncronas.
 --
 ### Paralelismo
 Dos procesos se están ejecutando simultáneamente. Se puede decir que si el cálculo es paralelo, también es concurrente.

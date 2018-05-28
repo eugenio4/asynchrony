@@ -24,11 +24,9 @@ function saveFile (basePath, fileName, image) {
  * @param {String} fileName 
  * @param {Buffer} data
  */
-function resizeImg (basePath, fileName, data) {
-  return jimp.read(data)
-    .then((image)=> {
-      return image.resize(THUMB_WIDTH, THUMB_HEIGHT)
-    });    
+async function resizeImg (basePath, fileName, data) {
+  let image = await jimp.read(data);
+  return image.resize(THUMB_WIDTH, THUMB_HEIGHT);
 }
 
 /**
@@ -37,11 +35,9 @@ function resizeImg (basePath, fileName, data) {
  * @param {String} fileName 
  * @param {Buffer} data 
  */
-function generateThumbnails (basePath, fileName, data) {
-  return resizeImg(basePath, fileName, data)
-    .then((image)=> {
-      saveFile(basePath, fileName, image)
-    })
+async function generateThumbnails (basePath, fileName, data) {
+  let image = await resizeImg(basePath, fileName, data);
+  return saveFile(basePath, fileName, image);
 }
 
 /**
@@ -80,29 +76,28 @@ function showError(err) {
   console.log('*** Se ha producido un error: ' + err);
 }
 
-function processFiles(directory, action) {
+async function processFiles(directory, action) {
   const ALLOW_EXT = ['.png', '.jpeg', '.jpg', '.gif'];
+  try {
+    let files =  await readDir(directory, action);  
+    for (let file of files) {
+      if (ALLOW_EXT.includes(path.extname(file))){
 
-  return readDir(directory, action)
-    .then((files)=> {
-      files.forEach(fileName => {
-        if (ALLOW_EXT.includes(path.extname(fileName))){
+        console.log('File found:' + file);
 
-          console.log('File found:' + fileName);
-
-          readFile(directory, fileName)
-            .then((dataFile) => {
-              action(directory, fileName, dataFile)                
-                .catch(showError);
-            });
-        }      
-      });
-    })
-    .catch(showError);
+        let dataFile = await readFile(directory, file);
+        action(directory, file, dataFile);            
+      }
+    };
+    return true;
+  } catch (err) {
+    showError(err);
+  }
 }
 
 function init () {
-  let dir = path.resolve(process.cwd(), __dirname).replace('/solutions/promises', '') + '/imgExercises';
+  let dir = path.resolve(process.cwd(), __dirname).replace('/solutions/asyncAwait', '') + '/imgExercises';
   processFiles(dir, generateThumbnails);
 }
+
 init();
