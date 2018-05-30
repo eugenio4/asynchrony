@@ -10,6 +10,7 @@
 * Callbacks
 * Promesas
 * Async / Await
+* Generadores
 
 
 --

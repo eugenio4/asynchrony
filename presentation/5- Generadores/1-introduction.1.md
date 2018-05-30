@@ -4,8 +4,8 @@
 --
 
 Permiten a las funciones "salir" en un punto en especial, y luego reanudar desde el mismo punto y estado.
-  * El asterisco indica que es un generador. Se puede usar function* o *nombreFunncion
-  * La palabra clave yield es nuestro punto de retorno o reanudación. Podemos usarla de la siguiente manera:
+  * El asterisco indica que es un generador. Se puede usar function\* o \*nombreFuncion
+  * La palabra clave yield es nuestro punto de retorno o reanudación.
 
 --
 
@@ -98,7 +98,7 @@ it.next();
 var res = it.next( 7 );
 res.value; // 42
 ````
-
+--
 ### Corrutinas
 
 * Las corrutinas son un concepto de programación que permite a las funciones pausarse y dar control a otra función.

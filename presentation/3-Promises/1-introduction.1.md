@@ -34,7 +34,7 @@ new Promise((resolve, reject) => {
 --
 
 ### Inversión del control
-Con los callbacks tenemos inversión del control, la continuación de nuestro programa esta basada en una función de devolución de llamada.
+Con los callbacks tenemos inversión de control, la continuación de nuestro programa esta basada en una función de devolución de llamada.
 
 Esta devolución de llamada se la entregamos a una tercera parte que no controlamos. ¿Podemos confiar en ese código?
 --

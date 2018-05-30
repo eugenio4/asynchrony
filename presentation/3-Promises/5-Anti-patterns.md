@@ -1,5 +1,5 @@
 ## Antipatrones y problemas comunes
-
+--
 ### Olvidar el return
 
 ````javascript
@@ -18,7 +18,7 @@ pi.getItem(1)
 
 ````
 La falta de retorno retorno delante de api.updateItem () provoca que ese bloque se resuelva inmediatamente, y api.deleteItem () probablemente se invocará antes de que finalice api.updateItem (). 
-
+--
 El problema es que .then () puede devolver un valor o una nueva promesa, y undefined es un valor válido.
 
 --

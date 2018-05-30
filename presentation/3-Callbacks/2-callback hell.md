@@ -12,8 +12,7 @@ myButton.addEventListener('click', function(){
 		  });
 		});
 	}, 500) ; 
-});	
-} );
+});
 
 ```
 --

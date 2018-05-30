@@ -36,7 +36,7 @@ new Promise((resolve, reject) => {
 ````
 Resultado:
   2
-  3
+  4
 --
 ### Errores no controlados
 

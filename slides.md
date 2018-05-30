@@ -10,6 +10,7 @@
 * Callbacks
 * Promesas
 * Async / Await
+* Generadores
 
 
 --
@@ -54,7 +55,7 @@ Se puede conseguir con un solo proceso o hilo turnando la ejecución de las tare
 ¿Se puede conseguir concurrencia en Javacsript?
 
 --
-Sí gracias a como trabajar el motor de JS y sus llamadas asíncronas.
+Sí, gracias a como trabaja el motor de JS y sus llamadas asíncronas.
 --
 ### Paralelismo
 Dos procesos se están ejecutando simultáneamente. Se puede decir que si el cálculo es paralelo, también es concurrente.
@@ -146,7 +147,7 @@ Este programa tiene dos posibles resultados dependiendo de cuál comienza a ejec
 function main(){
   console.log('A');
   setTimeout(
-    function display(){ console.log('B'); }
+    function exec(){ console.log('B'); }
   ,0);
 	console.log('C');
 }
@@ -216,8 +217,7 @@ myButton.addEventListener('click', function(){
 		  });
 		});
 	}, 500) ; 
-});	
-} );
+});
 
 ```
 --
@@ -373,20 +373,18 @@ getData1();
 Una solución
 
 ````javascript
-let datos1 = false;
-let datos2 = false;
-let datos3 = false;
-funcion succes1 => {datos1 = true; pintar();}
-funcion succes2 => {datos2 = true; pintar();}
-funcion succes3 => {datos3 = true; pintar();}
-function getData1 () { request("http://example.com/data1", getData2) }
-
-function getData2 () { request("http://example.com/data2", getData3) }
-
-function getData3 () { request("http://example.com/data2", pintar) }
+let numSuccessRequest = 0;
+function success () {
+  numSuccessRequest++;
+  pintar();
+}
+function fail () {}
+function getData1 () { request("http://example.com/data1", success, fail) }
+function getData2 () { request("http://example.com/data2", success, fail}
+function getData3 () { request("http://example.com/data2", success, fail}
 
 function pintar(){
-  if (datos1 && datos2 && datos3) {
+  if (pintar === 3) {
     //pintamos nuestra página
   }
 }
@@ -419,13 +417,13 @@ Hay que aumentar la lógica del código, todo ese control de llamadas asíncrona
 
 ### Ayuda
   * En la carpeta problems/callback tienes un fichero con el esquema básico del ejercicio.
-  * Leer el contenido de un directorio.
+  * Para leer el contenido de un directorio.
     * Usa la función fs.readdir del módulo fs.
-  * Leer el fichero.
+  * Para leer el fichero.
     * Usa la función fs.readFile del módulo fs.
-  * Generar imagen en miniatura.
+  * Para generar imagen en miniatura.
     * Usa la función resize de la libería jimp.
-  * Escribir a disco.
+  * Para escribir a disco.
     * Usa la libería jimp o el módulo fs.
 
 ---
@@ -465,7 +463,7 @@ new Promise((resolve, reject) => {
 --
 
 ### Inversión del control
-Con los callbacks tenemos inversión del control, la continuación de nuestro programa esta basada en una función de devolución de llamada.
+Con los callbacks tenemos inversión de control, la continuación de nuestro programa esta basada en una función de devolución de llamada.
 
 Esta devolución de llamada se la entregamos a una tercera parte que no controlamos. ¿Podemos confiar en ese código?
 --
@@ -585,7 +583,7 @@ new Promise((resolve, reject) => {
 ````
 Resultado:
   2
-  3
+  4
 --
 ### Errores no controlados
 
@@ -606,21 +604,19 @@ new Promise((_, reject) => reject(new Error('woops'))).
 ````
 
 --
-## Promesas ES6
+## API Promesas ES6
 --
 ## new Promise(..) Constructor
 Se usa con la palabra reservada new.
 ````javascript
   var p = new Promise( function(resolve,reject){
-    // `resolve(..)` to resolve/fulfill the promise
-    // `reject(..)` to reject the promise
+    // `resolve(..)` to resolve/fulfill the promise `reject(..)` to reject the promise
   } );
 ````
 
 Then (...) y catch (...) también crean y devuelven una nueva promesa, que puede encadenarse a otras promesas.
-
-Si cualquier devolución de llamada devuelve un valor inmediato, no Promesa, ese valor se establece como el cumplimiento de la promesa devuelta.
 --
+
 ````javascript 
 let p = new Promise((resolve, reject) => {
   setTimeout(()=> {
@@ -640,6 +636,7 @@ let p = new Promise((resolve, reject) => {
 --
 Si cualquier devolución de llamada devuelve una promesa, ese valor se desenvuelve y se convierte en la resolución de la promesa inicial.
 --
+Promesas encadenadas
 ````javascript 
 let p = new Promise((resolve, reject) => {
   setTimeout(()=> {
@@ -688,6 +685,7 @@ Promise.resolve( foo( 42 ) )
   } );
 
 ````
+--
 ### Promise.all
 
 Permite coordinar varias promesas y esperar a que se cumplan todas ellas. Esto nos permite lanzar llamadas asíncronas en "paralelo".
@@ -700,14 +698,10 @@ Promise.all([
   request('url2')
   request('url3')
 ])
-  .then((result) => { 
-    //result is array with values of each response
-  })
-  .catch(() => {
-    // is execufed if fail at least one request
-  })
+  .then((result) => {})
+  .catch((err) => {})
 ````
-
+--
 ### Promise.race
 
 La promesa estará resuelta, en cuanto una de las promesas que se pasan como parámetro se cumpla.
@@ -836,11 +830,11 @@ Promise.resolve()
 --
 ### Lanzar errores
 
-El código dentro de instrucciones then () se comporta como dentro de un bloque try. Ambos Promise.reject () y throw new Error () harán que se ejecute el siguiente bloque catch ().
+El código dentro de instrucciones then () se comporta como dentro de un bloque try. Promise.reject () y throw new Error () harán que se ejecute el siguiente bloque catch ().
 
 --
 ## Antipatrones y problemas comunes
-
+--
 ### Olvidar el return
 
 ````javascript
@@ -859,7 +853,7 @@ pi.getItem(1)
 
 ````
 La falta de retorno retorno delante de api.updateItem () provoca que ese bloque se resuelva inmediatamente, y api.deleteItem () probablemente se invocará antes de que finalice api.updateItem (). 
-
+--
 El problema es que .then () puede devolver un valor o una nueva promesa, y undefined es un valor válido.
 
 --
@@ -893,7 +887,7 @@ Recuerda que los errores se propagan a la promesa superior, no es necesario pone
 * Si la promesa se completa.
   * Recibes de vuelta el valor.
 * Si la promesa rechaza.
-  * Se arroja el valor del error.
+  * Se lanza una excepción. Es necesario usar try/catch para capturar el error.
 
 --
 ### Ejemplo
@@ -1035,8 +1029,8 @@ Done!
 --
 
 Permiten a las funciones "salir" en un punto en especial, y luego reanudar desde el mismo punto y estado.
-  * El asterisco indica que es un generador. Se puede usar function* o *nombreFunncion
-  * La palabra clave yield es nuestro punto de retorno o reanudación. Podemos usarla de la siguiente manera:
+  * El asterisco indica que es un generador. Se puede usar function\* o \*nombreFuncion
+  * La palabra clave yield es nuestro punto de retorno o reanudación.
 
 --
 
@@ -1129,14 +1123,13 @@ it.next();
 var res = it.next( 7 );
 res.value; // 42
 ````
-
+--
 ### Corrutinas
 
 * Las corrutinas son un concepto de programación que permite a las funciones pausarse y dar control a otra función.
 * Las funciones pasan el control de un lado a otro.
 * Se pueden implementar usando generadores y promesas.
 * Async-Await = Generadores + Promesas
-
 --
 ### Ejercicio
   * Usa generadoes para procesar en paralelo todos los ficheros
@@ -1144,4 +1137,22 @@ res.value; // 42
 ### Ayuda
   * Usa Child Process para crear procesos que puedan correr en paralelo.
   * Ayudate del código realizado en los anteriores ejercicios.
+  --
+
+
+### Fuentes
+
+* [Event Loop](https://medium.com/front-end-hacking/javascript-event-loop-explained-4cd26af121d4)
+* [Event Loop 2](https://developer.mozilla.org/es/docs/Web/JavaScript/EventLoop)
+* [Demo Event Loop](http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D)
+* [parallel-vs-concurrent](https://bytearcher.com/articles/parallel-vs-concurrent/)
+* [You-Dont-Know-JS](https://github.com/getify/You-Dont-Know-JS/blob/master/async%20%26%20performance/ch2.md)
+* [Promises patterns anti patterns](https://medium.com/datafire-io/es6-promises-patterns-and-anti-patterns-bbb21a5d0918)
+* [Async functions](https://developers.google.com/web/fundamentals/primers/async-functions)
+
+
+
+
+
+
 ---

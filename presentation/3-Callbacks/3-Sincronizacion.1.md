@@ -39,20 +39,18 @@ getData1();
 Una solución
 
 ````javascript
-let datos1 = false;
-let datos2 = false;
-let datos3 = false;
-funcion succes1 => {datos1 = true; pintar();}
-funcion succes2 => {datos2 = true; pintar();}
-funcion succes3 => {datos3 = true; pintar();}
-function getData1 () { request("http://example.com/data1", getData2) }
-
-function getData2 () { request("http://example.com/data2", getData3) }
-
-function getData3 () { request("http://example.com/data2", pintar) }
+let numSuccessRequest = 0;
+function success () {
+  numSuccessRequest++;
+  pintar();
+}
+function fail () {}
+function getData1 () { request("http://example.com/data1", success, fail) }
+function getData2 () { request("http://example.com/data2", success, fail}
+function getData3 () { request("http://example.com/data2", success, fail}
 
 function pintar(){
-  if (datos1 && datos2 && datos3) {
+  if (pintar === 3) {
     //pintamos nuestra página
   }
 }

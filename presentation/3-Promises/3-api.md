@@ -1,18 +1,16 @@
-## Promesas ES6
+## API Promesas ES6
 --
 ## new Promise(..) Constructor
 Se usa con la palabra reservada new.
 ````javascript
   var p = new Promise( function(resolve,reject){
-    // `resolve(..)` to resolve/fulfill the promise
-    // `reject(..)` to reject the promise
+    // `resolve(..)` to resolve/fulfill the promise `reject(..)` to reject the promise
   } );
 ````
 
 Then (...) y catch (...) también crean y devuelven una nueva promesa, que puede encadenarse a otras promesas.
-
-Si cualquier devolución de llamada devuelve un valor inmediato, no Promesa, ese valor se establece como el cumplimiento de la promesa devuelta.
 --
+
 ````javascript 
 let p = new Promise((resolve, reject) => {
   setTimeout(()=> {
@@ -32,6 +30,7 @@ let p = new Promise((resolve, reject) => {
 --
 Si cualquier devolución de llamada devuelve una promesa, ese valor se desenvuelve y se convierte en la resolución de la promesa inicial.
 --
+Promesas encadenadas
 ````javascript 
 let p = new Promise((resolve, reject) => {
   setTimeout(()=> {
@@ -80,6 +79,7 @@ Promise.resolve( foo( 42 ) )
   } );
 
 ````
+--
 ### Promise.all
 
 Permite coordinar varias promesas y esperar a que se cumplan todas ellas. Esto nos permite lanzar llamadas asíncronas en "paralelo".
@@ -92,14 +92,10 @@ Promise.all([
   request('url2')
   request('url3')
 ])
-  .then((result) => { 
-    //result is array with values of each response
-  })
-  .catch(() => {
-    // is execufed if fail at least one request
-  })
+  .then((result) => {})
+  .catch((err) => {})
 ````
-
+--
 ### Promise.race
 
 La promesa estará resuelta, en cuanto una de las promesas que se pasan como parámetro se cumpla.

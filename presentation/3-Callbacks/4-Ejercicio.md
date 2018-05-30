@@ -7,11 +7,11 @@
 
 ### Ayuda
   * En la carpeta problems/callback tienes un fichero con el esquema básico del ejercicio.
-  * Leer el contenido de un directorio.
+  * Para leer el contenido de un directorio.
     * Usa la función fs.readdir del módulo fs.
-  * Leer el fichero.
+  * Para leer el fichero.
     * Usa la función fs.readFile del módulo fs.
-  * Generar imagen en miniatura.
+  * Para generar imagen en miniatura.
     * Usa la función resize de la libería jimp.
-  * Escribir a disco.
+  * Para escribir a disco.
     * Usa la libería jimp o el módulo fs.

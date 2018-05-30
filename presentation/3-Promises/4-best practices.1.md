@@ -108,4 +108,4 @@ Promise.resolve()
 --
 ### Lanzar errores
 
-El código dentro de instrucciones then () se comporta como dentro de un bloque try. Ambos Promise.reject () y throw new Error () harán que se ejecute el siguiente bloque catch ().
+El código dentro de instrucciones then () se comporta como dentro de un bloque try. Promise.reject () y throw new Error () harán que se ejecute el siguiente bloque catch ().

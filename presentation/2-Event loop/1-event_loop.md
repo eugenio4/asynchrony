@@ -20,7 +20,7 @@
 function main(){
   console.log('A');
   setTimeout(
-    function display(){ console.log('B'); }
+    function exec(){ console.log('B'); }
   ,0);
 	console.log('C');
 }

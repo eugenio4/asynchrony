@@ -15,7 +15,7 @@
 * Si la promesa se completa.
   * Recibes de vuelta el valor.
 * Si la promesa rechaza.
-  * Se arroja el valor del error.
+  * Se lanza una excepción. Es necesario usar try/catch para capturar el error.
 
 --
 ### Ejemplo
